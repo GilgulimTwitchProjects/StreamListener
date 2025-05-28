@@ -36,6 +36,6 @@ export class DiscordBot {
     sendMessage(channelId, message) {
         const uri = `https://discord.com/api/v10/channels/${channelId}/messages`;
         const body = { content: message };
-        return this.postRequest(uri, body, (response) => console.log(response));
+        return this.postRequest(uri, body, (response) =>  response /* console.log(response) */);
     }
 }
