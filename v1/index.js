@@ -22,15 +22,18 @@ class TwitchListener {
             previousLiveStreamers = previousResponse.data.map(
                 (responseJSON) => responseJSON.user_login,
             );
-            previousLiveStreamers.filter((streamer) => !pausedStreamers.includes(streamer));
         }
 
         response.data.forEach(
             ({ user_login: userLogin, user_name: userName }) => {
-                if (!previousLiveStreamers.includes(userLogin)) {
+                if (!previousLiveStreamers.includes(userLogin) && !pausedStreamers.includes(userLogin)) {
                     const message = `${userName} è live. Andate a guardare il suo stream:\nhttps://www.twitch.tv/${userLogin}`;
                     discordBot.sendMessage(discordChannelId, message);
+
                     pausedStreamers.push(userLogin);
+                    setTimeout(() => {
+                        pausedStreamers.shift();
+                    }, 5000);
                 }
             },
         );
@@ -39,27 +42,12 @@ class TwitchListener {
     streamListener(callback, streamers) {
         let previousResponsePromise;
         let pausedStreamers = [];
-        let flag = true;
 
         // IMPLEMENT: Error Handling
         setInterval(async () => {
-
-            // DEBUG: setTimeout must be called ONCE per push in pausedStreamers!
-            // flag makes sure this happens, BUT for 2000ms there will be no new SetTimeout
-            // What in case two streamers go live almost at the same time?
-            if(pausedStreamers.length !== 0 && flag) {
-                setTimeout(() => {
-                    console.log("setTimeout ");
-                    pausedStreamers.shift();
-                    flag = true;
-                }, 2000)
-                flag=false;
-            }
-
             let previousResponse = await previousResponsePromise;
             previousResponsePromise = this.#twitchBot.getStreams((response) => {
                 callback(response, previousResponse, pausedStreamers);
-                console.log(pausedStreamers);
             }, streamers);
         }, 250);
     }
@@ -71,6 +59,7 @@ class TwitchListener {
         // });
         const streamers = [
             "fragolaqt",
+            "eqyuriko",
             "claneko_vt",
             "damiano048",
             "kimoshivt",
