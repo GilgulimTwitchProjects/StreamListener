@@ -44,11 +44,16 @@ class TwitchListener {
         let pausedStreamers = [];
 
         // IMPLEMENT: Error Handling
-        setInterval(async () => {
+        let repeatedTask = setInterval(async () => {
             let previousResponse = await previousResponsePromise;
-            previousResponsePromise = this.#twitchBot.getStreams((response) => {
-                callback(response, previousResponse, pausedStreamers);
-            }, streamers);
+            try {
+                previousResponsePromise = this.#twitchBot.getStreams((response) => {
+                    callback(response, previousResponse, pausedStreamers);
+                }, streamers);
+            } catch(error) {
+                console.error(error);
+                clearInterval(repeatedTask);
+            }
         }, 250);
     }
 
