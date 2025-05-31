@@ -3,7 +3,10 @@ import { TwitchBot } from "./twitch.js";
 // import { ReplitDatabase } from "./database.js";
 import dotenv from "dotenv";
 
-// DEBUG: If a streamer manages to end a stream and start a new one within the time frame that passes between one GET request and the next, the new stream will go undetected
+// IMPLEMENT: Error handling -> find a way to track connection/fetch errors even while the code is running on a server
+// IMPLEMENT: Streamers need to be able to turn off the discord bot: either create a bot command or a condition based on stream info (such as stream name)
+
+// DEBUG?: very short streams go undetected + if stream starts at application init, it goes undetected
 class TwitchListener {
     #twitchBot = new TwitchBot();
     // #database = new ReplitDatabase();
@@ -13,7 +16,7 @@ class TwitchListener {
         this.#twitchBot.accessToken = twitchAccessToken;
     }
 
-    streamEventHandler(response, previousResponse, pausedStreamers) {
+    streamEventHandler(response, previousResponse, previousLiveIds) {
         const discordBot = new DiscordBot(discordBotToken);
 
         // DEBUG: Can I avoid this extra loop?
@@ -24,16 +27,14 @@ class TwitchListener {
             );
         }
 
+        // Sends a message if the streamer wasn't live in the previous fetch response
+        // and if the stream id wasn't encountered before (to avoid bugs in case of packet loss)
         response.data.forEach(
-            ({ user_login: userLogin, user_name: userName }) => {
-                if (!previousLiveStreamers.includes(userLogin) && !pausedStreamers.includes(userLogin)) {
-                    const message = `${userName} è live. Andate a guardare il suo stream:\nhttps://www.twitch.tv/${userLogin}`;
-                    discordBot.sendMessage(discordChannelId, message);
-
-                    pausedStreamers.push(userLogin);
-                    setTimeout(() => {
-                        pausedStreamers.shift();
-                    }, 5000);
+            ({ id: liveId, user_login: userLogin, user_name: userName }) => {
+                if (!previousLiveStreamers.includes(userLogin) && (previousLiveIds === undefined || previousLiveIds[userLogin] !== liveId)) {
+                        const message = `${userName} è live. Andate a guardare il suo stream:\nhttps://www.twitch.tv/${userLogin}`;
+                        discordBot.sendMessage(discordChannelId, message);
+                        previousLiveIds[userLogin] = liveId;
                 }
             },
         );
@@ -41,14 +42,14 @@ class TwitchListener {
 
     streamListener(callback, streamers) {
         let previousResponsePromise;
-        let pausedStreamers = [];
+        let previousLiveIds = {};
 
         // IMPLEMENT: Error Handling
         let repeatedTask = setInterval(async () => {
             let previousResponse = await previousResponsePromise;
             try {
                 previousResponsePromise = this.#twitchBot.getStreams((response) => {
-                    callback(response, previousResponse, pausedStreamers);
+                    callback(response, previousResponse, previousLiveIds);
                 }, streamers);
             } catch(error) {
                 console.error(error);
@@ -63,8 +64,6 @@ class TwitchListener {
         //     this.streamListener(this.streamEventHandler, streamers.value);
         // });
         const streamers = [
-            "fragolaqt",
-            "eqyuriko",
             "claneko_vt",
             "damiano048",
             "kimoshivt",
