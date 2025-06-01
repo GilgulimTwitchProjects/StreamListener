@@ -1,7 +1,6 @@
 import { DiscordBot } from "./discord/discord.js";
 import { TwitchListener } from "./twitch/twitchListener.js";
 import { ReplitDatabase } from "./replit/database.js";
-import dotenv from "dotenv";
 
 async function init(twitchClientId, twitchAccessToken, discordBotToken) {
     const database = new ReplitDatabase();
@@ -18,8 +17,6 @@ async function init(twitchClientId, twitchAccessToken, discordBotToken) {
         discordBot.sendMessage(discordChannelId, message);
     }, streamers, safeTitles);
 }
-
-dotenv.config({ path: "secrets/.env" });
 
 const twitchClientId = process.env.TWITCH_CLIENT_ID;
 const twitchAccessToken = process.env.TWITCH_ACCESS_TOKEN;
