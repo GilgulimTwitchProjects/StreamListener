@@ -7,12 +7,21 @@ export class ReplitDatabase {
     await this.database.set("streamers", streamers);
   }
 
+  async saveSafeTitles(safeTitles) {
+    await this.database.set("safeTitles", safeTitles);
+  }
+
   async getStreamerList() {
     return await this.database.get("streamers");
   }
 
+  async getSafeTitles() {
+    return await this.database.get("safeTitles");
+  }
+
   init() {
     this.database = new db();
+
     const streamers = [
       "claneko_vt",
       "damiano048",
@@ -34,5 +43,12 @@ export class ReplitDatabase {
       "violex_fairy",
     ];
     this.saveStreamerList(streamers);
+
+    const safeTitles = [
+        "prova",
+        "prove",
+        "test",
+    ];
+    this.saveSafeTitles(safeTitles);
   }
 }

@@ -1,0 +1,26 @@
+{
+  "name": "streamlistener",
+  "version": "1.0.0",
+  "description": "streamListener detects when twitch streamers from a list saved in Replit's database go live and sends a custom message to a Discord server's channel",
+  "homepage": "https://github.com/GilgulimTwitchProjects/StreamListener#readme",
+  "bugs": {
+    "url": "https://github.com/GilgulimTwitchProjects/StreamListener/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GilgulimTwitchProjects/StreamListener.git"
+  },
+  "license": "ISC",
+  "author": "Giovanni Franco",
+  "type": "module",
+  "main": "v1/index.js",
+  "scripts": {
+    "start": "node v1/index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@replit/database": "^3.0.1",
+    "dotenv": "^16.5.0",
+    "@types/node": "^22.13.11"
+  }
+}
